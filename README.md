@@ -29,7 +29,7 @@ A simple Blender 4.1+ add-on that lets you easily copy multiple specific modifie
 ### Install the add-on
 
 - In Blender: Edit > Preferences > Add-ons > Install
-- Select the extracted `modifier_copy_paste.py` file
+- Select the extracted `Modifier0w0 addon.py` file
 - Enable the add-on (check the box)
 
 ### Use the add-on
