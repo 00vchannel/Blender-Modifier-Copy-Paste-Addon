@@ -3,6 +3,9 @@
 A simple Blender 4.1+ add-on that lets you easily copy multiple specific modifiers to all selected objects, supporting both single and multiple modifier operations.
 ![Image](https://github.com/user-attachments/assets/d811f0d8-ff34-4847-82a6-7eb7edaf3ff5)
 
+Support multiple objects pasting
+![Image](https://github.com/user-attachments/assets/25d03420-1bab-4194-b2ed-38bda16dc7f8)
+
 ## Features
 
 - Copy single modifiers with precise control
