@@ -9,7 +9,7 @@ copied_modifiers = []
 bl_info = {
     "name": "Modifier Copy Paste Plus",
     "author": "Your Name",
-    "version": (1, 1),
+    "version": (1, 2),
     "blender": (4, 1, 0),
     "location": "3D View > Sidebar > Modifier Copy Paste",
     "description": "Copy and paste specific modifier settings with multi-copy support",
@@ -171,14 +171,14 @@ class OBJECT_OT_copy_multiple_modifiers(Operator):
         return {'FINISHED'}
 
 class OBJECT_OT_paste_multiple_modifiers(Operator):
-    """Paste all copied modifiers to the selected object"""
+    """Paste all copied modifiers to all selected objects"""
     bl_idname = "object.paste_multiple_modifiers"
     bl_label = "Paste All Modifiers"
     bl_options = {'REGISTER', 'UNDO'}
     
     @classmethod
     def poll(cls, context):
-        return context.active_object is not None and len(copied_modifiers) > 0
+        return context.selected_objects and len(copied_modifiers) > 0
     
     def execute(self, context):
         global copied_modifiers
@@ -188,27 +188,44 @@ class OBJECT_OT_paste_multiple_modifiers(Operator):
             self.report({'ERROR'}, "No modifiers have been copied")
             return {'CANCELLED'}
         
-        count = 0
-        for mod_data in copied_modifiers:
-            # Add the same type of modifier
-            try:
-                new_modifier = context.active_object.modifiers.new(
-                    name=mod_data['name'],
-                    type=mod_data['type']
-                )
-                
-                # Set modifier properties with improved handling
-                for prop, value in mod_data['properties'].items():
-                    try:
-                        set_property_value(new_modifier, prop, value)
-                    except:
-                        pass
-                
-                count += 1
-            except:
-                self.report({'WARNING'}, f"Failed to paste modifier: {mod_data['name']}")
+        total_count = 0
+        affected_objects = 0
         
-        self.report({'INFO'}, f"Pasted {count} modifier{'s' if count > 1 else ''}")
+        # Apply modifiers to all selected objects
+        for obj in context.selected_objects:
+            # Skip non-mesh objects or other unsupported types if needed
+            if obj.type not in {'MESH', 'CURVE', 'LATTICE', 'SURFACE', 'FONT', 'META'}:
+                continue
+                
+            count = 0
+            for mod_data in copied_modifiers:
+                # Add the same type of modifier
+                try:
+                    new_modifier = obj.modifiers.new(
+                        name=mod_data['name'],
+                        type=mod_data['type']
+                    )
+                    
+                    # Set modifier properties with improved handling
+                    for prop, value in mod_data['properties'].items():
+                        try:
+                            set_property_value(new_modifier, prop, value)
+                        except:
+                            pass
+                    
+                    count += 1
+                except:
+                    self.report({'WARNING'}, f"Failed to paste modifier: {mod_data['name']} to {obj.name}")
+            
+            if count > 0:
+                affected_objects += 1
+                total_count += count
+        
+        if affected_objects > 0:
+            self.report({'INFO'}, f"Pasted {total_count} modifier{'s' if total_count > 1 else ''} to {affected_objects} object{'s' if affected_objects > 1 else ''}")
+        else:
+            self.report({'WARNING'}, "No modifiers were pasted to any objects")
+            
         return {'FINISHED'}
 
 # Keep the single modifier copy for convenience
@@ -319,7 +336,11 @@ class VIEW3D_PT_modifier_copy_paste(Panel):
         box = layout.box()
         box.label(text="Paste Modifiers", icon='PASTEDOWN')
         col = box.column(align=True)
-        col.operator("object.paste_multiple_modifiers", text="Paste All Modifiers", icon='MODIFIER')
+        
+        # Show selection count for paste operation
+        selected_count = len(context.selected_objects)
+        paste_text = f"Paste to {selected_count} Selected Object{'s' if selected_count > 1 else ''}"
+        col.operator("object.paste_multiple_modifiers", text=paste_text, icon='MODIFIER')
         
         # Display information about the currently copied modifiers
         if copied_modifiers:
