@@ -12,7 +12,7 @@ bl_info = {
     "version": (1, 2),
     "blender": (4, 1, 0),
     "location": "3D View > Sidebar > Modifier Copy Paste",
-    "description": "Copy and paste specific modifier settings with multi-copy support",
+    "description": "Copy, paste, and remove modifiers across multiple objects",
     "category": "Object",
 }
 
@@ -71,6 +71,37 @@ def set_property_value(obj, prop_name, value):
 class ModifierItem(bpy.types.PropertyGroup):
     name: StringProperty()
     enabled: BoolProperty(default=True)
+
+# Get unique modifier types from selected objects
+def get_unique_modifier_types(context):
+    mod_types = set()
+    for obj in context.selected_objects:
+        if obj.type != 'MESH':
+            continue
+        for mod in obj.modifiers:
+            mod_types.add(mod.type)
+    return sorted(list(mod_types))
+
+# Function to get all modifiers of a specific type across selected objects
+def get_modifiers_by_type(context, mod_type):
+    modifiers = []
+    for obj in context.selected_objects:
+        if obj.type != 'MESH':
+            continue
+        for mod in obj.modifiers:
+            if mod.type == mod_type:
+                modifiers.append((obj, mod))
+    return modifiers
+
+# Get unique modifier names from selected objects
+def get_unique_modifier_names(context):
+    mod_names = set()
+    for obj in context.selected_objects:
+        if obj.type != 'MESH':
+            continue
+        for mod in obj.modifiers:
+            mod_names.add(mod.name)
+    return sorted(list(mod_names))
 
 class OBJECT_OT_copy_multiple_modifiers(Operator):
     """Copy multiple modifiers from the selected object"""
@@ -171,14 +202,14 @@ class OBJECT_OT_copy_multiple_modifiers(Operator):
         return {'FINISHED'}
 
 class OBJECT_OT_paste_multiple_modifiers(Operator):
-    """Paste all copied modifiers to all selected objects"""
+    """Paste all copied modifiers to the selected object"""
     bl_idname = "object.paste_multiple_modifiers"
     bl_label = "Paste All Modifiers"
     bl_options = {'REGISTER', 'UNDO'}
     
     @classmethod
     def poll(cls, context):
-        return context.selected_objects and len(copied_modifiers) > 0
+        return context.active_object is not None and len(copied_modifiers) > 0
     
     def execute(self, context):
         global copied_modifiers
@@ -188,16 +219,15 @@ class OBJECT_OT_paste_multiple_modifiers(Operator):
             self.report({'ERROR'}, "No modifiers have been copied")
             return {'CANCELLED'}
         
-        total_count = 0
-        affected_objects = 0
+        # Apply to all selected objects
+        objects_modified = 0
+        modifiers_added = 0
         
-        # Apply modifiers to all selected objects
         for obj in context.selected_objects:
-            # Skip non-mesh objects or other unsupported types if needed
-            if obj.type not in {'MESH', 'CURVE', 'LATTICE', 'SURFACE', 'FONT', 'META'}:
+            if obj.type != 'MESH':
                 continue
                 
-            count = 0
+            obj_mods_added = 0
             for mod_data in copied_modifiers:
                 # Add the same type of modifier
                 try:
@@ -213,19 +243,15 @@ class OBJECT_OT_paste_multiple_modifiers(Operator):
                         except:
                             pass
                     
-                    count += 1
+                    obj_mods_added += 1
                 except:
                     self.report({'WARNING'}, f"Failed to paste modifier: {mod_data['name']} to {obj.name}")
             
-            if count > 0:
-                affected_objects += 1
-                total_count += count
+            if obj_mods_added > 0:
+                objects_modified += 1
+                modifiers_added += obj_mods_added
         
-        if affected_objects > 0:
-            self.report({'INFO'}, f"Pasted {total_count} modifier{'s' if total_count > 1 else ''} to {affected_objects} object{'s' if affected_objects > 1 else ''}")
-        else:
-            self.report({'WARNING'}, "No modifiers were pasted to any objects")
-            
+        self.report({'INFO'}, f"Pasted {modifiers_added} modifier{'s' if modifiers_added > 1 else ''} to {objects_modified} object{'s' if objects_modified > 1 else ''}")
         return {'FINISHED'}
 
 # Keep the single modifier copy for convenience
@@ -310,6 +336,111 @@ class OBJECT_OT_copy_specific_modifier(Operator):
         self.report({'INFO'}, f"Copied modifier: {modifier.name}")
         return {'FINISHED'}
 
+class OBJECT_OT_remove_modifier_by_name(Operator):
+    """Remove a specific modifier by name from all selected objects"""
+    bl_idname = "object.remove_modifier_by_name"
+    bl_label = "Remove Modifier by Name"
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    def get_modifier_names(self, context):
+        names = get_unique_modifier_names(context)
+        items = [(name, name, f"Remove all modifiers named {name}") for name in names]
+        return items if items else [("NONE", "No Modifiers", "No modifiers found in selected objects")]
+    
+    modifier_name: EnumProperty(
+        name="Select Modifier Name",
+        description="Choose which modifier name to remove",
+        items=get_modifier_names
+    )
+    
+    @classmethod
+    def poll(cls, context):
+        return len(context.selected_objects) > 0
+    
+    def invoke(self, context, event):
+        # Show dialog to let user select a modifier
+        return context.window_manager.invoke_props_dialog(self)
+    
+    def execute(self, context):
+        if self.modifier_name == "NONE":
+            self.report({'ERROR'}, "No modifiers available")
+            return {'CANCELLED'}
+        
+        count = 0
+        objects_modified = 0
+        
+        for obj in context.selected_objects:
+            if obj.type != 'MESH':
+                continue
+                
+            if self.modifier_name in obj.modifiers:
+                obj.modifiers.remove(obj.modifiers[self.modifier_name])
+                count += 1
+                objects_modified += 1
+        
+        if count > 0:
+            self.report({'INFO'}, f"Removed {count} modifier{'s' if count > 1 else ''} named '{self.modifier_name}' from {objects_modified} object{'s' if objects_modified > 1 else ''}")
+        else:
+            self.report({'WARNING'}, f"No modifiers named '{self.modifier_name}' found in selected objects")
+            
+        return {'FINISHED'}
+
+class OBJECT_OT_remove_modifier_by_type(Operator):
+    """Remove all modifiers of a specific type from all selected objects"""
+    bl_idname = "object.remove_modifier_by_type"
+    bl_label = "Remove Modifier by Type"
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    def get_modifier_types(self, context):
+        types = get_unique_modifier_types(context)
+        items = [(t, t, f"Remove all {t} modifiers") for t in types]
+        return items if items else [("NONE", "No Modifiers", "No modifiers found in selected objects")]
+    
+    modifier_type: EnumProperty(
+        name="Select Modifier Type",
+        description="Choose which type of modifier to remove",
+        items=get_modifier_types
+    )
+    
+    @classmethod
+    def poll(cls, context):
+        return len(context.selected_objects) > 0
+    
+    def invoke(self, context, event):
+        # Show dialog to let user select a modifier type
+        return context.window_manager.invoke_props_dialog(self)
+    
+    def execute(self, context):
+        if self.modifier_type == "NONE":
+            self.report({'ERROR'}, "No modifiers available")
+            return {'CANCELLED'}
+        
+        count = 0
+        objects_modified = 0
+        
+        for obj in context.selected_objects:
+            if obj.type != 'MESH':
+                continue
+            
+            obj_modified = False
+            # We need to create a list because we'll be modifying the collection
+            mods_to_remove = [mod for mod in obj.modifiers if mod.type == self.modifier_type]
+            
+            for mod in mods_to_remove:
+                obj.modifiers.remove(mod)
+                count += 1
+                obj_modified = True
+            
+            if obj_modified:
+                objects_modified += 1
+        
+        if count > 0:
+            self.report({'INFO'}, f"Removed {count} {self.modifier_type} modifier{'s' if count > 1 else ''} from {objects_modified} object{'s' if objects_modified > 1 else ''}")
+        else:
+            self.report({'WARNING'}, f"No {self.modifier_type} modifiers found in selected objects")
+            
+        return {'FINISHED'}
+
 class VIEW3D_PT_modifier_copy_paste(Panel):
     """Modifier Copy Paste Panel"""
     bl_label = "Modifier Copy Paste"
@@ -336,11 +467,14 @@ class VIEW3D_PT_modifier_copy_paste(Panel):
         box = layout.box()
         box.label(text="Paste Modifiers", icon='PASTEDOWN')
         col = box.column(align=True)
+        col.operator("object.paste_multiple_modifiers", text="Paste All Modifiers", icon='MODIFIER')
         
-        # Show selection count for paste operation
-        selected_count = len(context.selected_objects)
-        paste_text = f"Paste to {selected_count} Selected Object{'s' if selected_count > 1 else ''}"
-        col.operator("object.paste_multiple_modifiers", text=paste_text, icon='MODIFIER')
+        # Remove section - NEW
+        box = layout.box()
+        box.label(text="Remove Modifiers", icon='X')
+        col = box.column(align=True)
+        col.operator("object.remove_modifier_by_name", text="Remove by Name", icon='CANCEL')
+        col.operator("object.remove_modifier_by_type", text="Remove by Type", icon='CANCEL')
         
         # Display information about the currently copied modifiers
         if copied_modifiers:
@@ -365,10 +499,14 @@ def register():
     bpy.utils.register_class(OBJECT_OT_copy_multiple_modifiers)
     bpy.utils.register_class(OBJECT_OT_paste_multiple_modifiers)
     bpy.utils.register_class(OBJECT_OT_copy_specific_modifier)
+    bpy.utils.register_class(OBJECT_OT_remove_modifier_by_name)
+    bpy.utils.register_class(OBJECT_OT_remove_modifier_by_type)
     bpy.utils.register_class(VIEW3D_PT_modifier_copy_paste)
 
 def unregister():
     bpy.utils.unregister_class(VIEW3D_PT_modifier_copy_paste)
+    bpy.utils.unregister_class(OBJECT_OT_remove_modifier_by_type)
+    bpy.utils.unregister_class(OBJECT_OT_remove_modifier_by_name)
     bpy.utils.unregister_class(OBJECT_OT_copy_specific_modifier)
     bpy.utils.unregister_class(OBJECT_OT_paste_multiple_modifiers)
     bpy.utils.unregister_class(OBJECT_OT_copy_multiple_modifiers)
