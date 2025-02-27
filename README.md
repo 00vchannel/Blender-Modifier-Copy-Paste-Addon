@@ -8,6 +8,10 @@ A simple Blender 4.1+ add-on that lets you easily copy multiple specific modifie
 
 ![Image](https://github.com/user-attachments/assets/25d03420-1bab-4194-b2ed-38bda16dc7f8)
 
+- Support Remove specific modifier now!
+
+![Image](https://github.com/user-attachments/assets/883a8a26-bd87-489a-ac89-bbc1391e8546)
+
 ## Features
 
 - Copy single modifiers with precise control
