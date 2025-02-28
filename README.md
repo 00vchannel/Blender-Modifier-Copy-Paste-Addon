@@ -39,7 +39,7 @@ A simple Blender 4.1+ add-on that lets you easily copy, paste, and remove multip
 
 #### Copying Modifiers
 - **Select** an object with modifiers in Object Mode.
-- Open the sidebar with the **N key** and go to the **"Modifier Copy Paste"** tab.
+- Open the sidebar with the **N key** and go to the **"Modifier0w0"** tab.
 - Choose **"Copy Multiple Modifiers"** to select several specific modifiers using checkboxes.
 - Alternatively, choose **"Copy Single Modifier"** to copy just one modifier.
 
@@ -49,7 +49,7 @@ A simple Blender 4.1+ add-on that lets you easily copy, paste, and remove multip
 
 #### Removing Specific Modifiers
 - **Select** the object(s) from which you want to remove modifiers.
-- In the **"Modifier Copy Paste"** tab in the sidebar, navigate to the modifier list.
+- In the **"Modifier0w0"** tab in the sidebar, navigate to the modifier list.
 - Check the box next to each modifier you wish to remove.
 - Click **"Remove Selected Modifiers"** to delete the chosen modifiers from all selected objects.
 - **Note:** Removal is generally permanent. The add-on may display a warning prompt to prevent accidental deletion, so double-check your selections before confirming.
