@@ -1,14 +1,14 @@
-# Blender Modifier Copy Paste and Remove Specifically 
+# Blender Modifier Copy Paste and Remove Specifically
 
-A simple Blender 4.1+ add-on that lets you easily copy multiple specific modifiers to all selected objects, supporting both single and multiple modifier operations.
+A simple Blender 4.1+ add-on that lets you easily copy, paste, and remove multiple specific modifiers across all selected objects. The add-on supports both single and multiple modifier operations.
 
 ![Image](https://github.com/user-attachments/assets/d811f0d8-ff34-4847-82a6-7eb7edaf3ff5)
 
-- Support multiple objects pasting
+- **Support multiple objects pasting!** (27/02/2025)
 
 ![Image](https://github.com/user-attachments/assets/25d03420-1bab-4194-b2ed-38bda16dc7f8)
 
-- Support Remove specific modifier now!
+- **Support Remove specific modifier now!** (28/02/2025)
 
 ![Image](https://github.com/user-attachments/assets/883a8a26-bd87-489a-ac89-bbc1391e8546)
 
@@ -17,6 +17,7 @@ A simple Blender 4.1+ add-on that lets you easily copy multiple specific modifie
 - Copy single modifiers with precise control
 - Copy multiple specific modifiers at once with checkbox selection
 - Paste all copied modifiers to any object with a single click
+- **Remove specific modifiers from selected objects easily**
 - Special handling for complex modifier properties
 - Proper copying of vector values, colors, and object references
 - Intuitive UI in its own dedicated sidebar panel
@@ -26,34 +27,41 @@ A simple Blender 4.1+ add-on that lets you easily copy multiple specific modifie
 
 ### Download from GitHub
 
-- Click the green "Code" button on this page
-- Select "Download ZIP"
+- Click the green **"Code"** button on this page
+- Select **"Download ZIP"**
 - Extract the ZIP file
 
-### Install the add-on
+### Install the Add-on
 
-- In Blender: Edit > Preferences > Add-ons > Install
+- In Blender: **Edit > Preferences > Add-ons > Install**
 - Select the extracted `Modifier0w0 addon.py` file
 - Enable the add-on (check the box)
 
-### Use the add-on
+### Using the Add-on
 
-**Copying modifiers:**
-- Select an object with modifiers in Object Mode
-- Open the sidebar with N key and find "Modifier Copy Paste" tab
-- Choose "Copy Multiple Modifiers" to select several specific modifiers using checkboxes
-- Choose "Copy Single Modifier" for just one modifier
+#### Copying Modifiers
+- **Select** an object with modifiers in Object Mode.
+- Open the sidebar with the **N key** and go to the **"Modifier Copy Paste"** tab.
+- Choose **"Copy Multiple Modifiers"** to select several specific modifiers using checkboxes.
+- Alternatively, choose **"Copy Single Modifier"** to copy just one modifier.
 
-**Pasting modifiers:**
-- Select a target object
-- Click "Paste All Modifiers" to apply all copied modifiers to another object
+#### Pasting Modifiers
+- **Select** a target object.
+- Click **"Paste All Modifiers"** to apply all copied modifiers to the target object.
+
+#### Removing Specific Modifiers
+- **Select** the object(s) from which you want to remove modifiers.
+- In the **"Modifier Copy Paste"** tab in the sidebar, navigate to the modifier list.
+- Check the box next to each modifier you wish to remove.
+- Click **"Remove Selected Modifiers"** to delete the chosen modifiers from all selected objects.
+- **Note:** Removal is generally permanent. The add-on may display a warning prompt to prevent accidental deletion, so double-check your selections before confirming.
 
 ## Advanced Usage
 
-- Select only the modifiers you need by using the checkbox interface
-- The add-on shows a list of currently copied modifiers in the panel
-- Special handling for referenced objects and vertex groups
-- Warnings for modifier types that may need manual adjustment after pasting
+- **Selective Modifier Management:** Use the checkbox interface to specifically choose which modifiers to copy or remove.
+- **Live Feedback:** The add-on displays a list of currently copied modifiers on the panel.
+- **Handling Complex Data:** Special care is taken for modifiers referencing objects, vertex groups, and other non-primitive types.
+- **Compatibility Warnings:** Some modifier types may require manual adjustment after pasting or removing due to their unique properties.
 
 ## Requirements
 
