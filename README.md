@@ -2,6 +2,8 @@
 
 A simple Blender 4.1+ add-on that lets you easily copy, paste, and remove multiple specific modifiers across all selected objects. The add-on supports both single and multiple modifier operations.
 
+When creating 3D anime models with toon shading, adding outline modifiers often causes flipped faces that prevent proper export. Manually removing these modifiers from numerous objects (clothing, hair, accessories, etc.) is inefficient. To solve this common workflow issue, I developed a free open-source Blender add-on (using Claude 3.7 Sonnet) that removes specific modifiers from all selected objects with one click – streamlining the process for myself and other artists facing this challenge.
+
 - **Support multiple objects pasting!** (27/02/2025)
 
 ![Image](https://github.com/user-attachments/assets/25d03420-1bab-4194-b2ed-38bda16dc7f8)
